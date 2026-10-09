@@ -10,7 +10,7 @@
  */
 
 // Read by .github/workflows/release.yml: bump this to publish a new release.
-const CARD_VERSION = "1.0.1";
+const CARD_VERSION = "1.0.2";
 
 const DIRECTIONS = {
   up: { label: "Move up", tilt: "UP", path: "M7.41 15.41 12 10.83l4.59 4.58L18 14l-6-6-6 6z" },
@@ -30,14 +30,14 @@ const DEFAULTS = {
 };
 
 const STYLE = `
-  :host { display: block; }
+  :host { display: block; height: 100%; }
   ha-card {
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 8px;
+    padding: 4px;
     box-sizing: border-box;
     overflow: hidden;
   }
@@ -236,10 +236,10 @@ class CameraPtzCard extends HTMLElement {
     return size > 0 ? Math.min(400, Math.max(80, size)) : DEFAULTS.size;
   }
 
-  // Full card height in px: pad + padding (+ title).
+  // Full card height in px: pad + padding + card border (+ title).
   _cardHeight() {
     const title = this._config && this._config.title ? 28 : 0;
-    return this._padSize() + 16 + title;
+    return this._padSize() + 8 + 2 + title;
   }
 
   // Height hint for masonry layouts (1 unit is about 50px).
