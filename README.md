@@ -52,6 +52,7 @@ You can also mix the two: a direction that has its own entity uses that entity, 
 | `entity` | none | ONVIF camera entity. Required unless all four direction entities are set. |
 | `up_entity`, `down_entity`, `left_entity`, `right_entity` | none | A `button`, `input_button`, `script` or `scene` to trigger for that direction. |
 | `title` | none | Heading shown above the pad. |
+| `size` | `150` | Diameter of the pad in pixels (80 to 400). The pad shrinks if the card is given less room. |
 | `move_mode` | `ContinuousMove` | ONVIF move mode: `ContinuousMove`, `RelativeMove` or `AbsoluteMove`. Try `RelativeMove` if the camera does not respond. |
 | `speed` | `0.5` | ONVIF speed, from 0 to 1. |
 | `distance` | `0.1` | Step size for relative moves, from 0 to 1. |

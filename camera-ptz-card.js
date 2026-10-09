@@ -10,7 +10,7 @@
  */
 
 // Read by .github/workflows/release.yml: bump this to publish a new release.
-const CARD_VERSION = "0.0.2";
+const CARD_VERSION = "1.0.1";
 
 const DIRECTIONS = {
   up: { label: "Move up", tilt: "UP", path: "M7.41 15.41 12 10.83l4.59 4.58L18 14l-6-6-6 6z" },
@@ -20,6 +20,7 @@ const DIRECTIONS = {
 };
 
 const DEFAULTS = {
+  size: 150,
   move_mode: "ContinuousMove",
   speed: 0.5,
   distance: 0.1,
@@ -36,19 +37,25 @@ const STYLE = `
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 16px;
+    padding: 8px;
     box-sizing: border-box;
+    overflow: hidden;
   }
   .title {
+    flex: none;
     color: var(--primary-text-color);
     font-size: 1.1em;
     font-weight: 500;
-    margin-bottom: 12px;
+    line-height: 20px;
+    margin-bottom: 8px;
   }
   .pad {
     position: relative;
-    width: 100%;
-    max-width: 200px;
+    box-sizing: border-box;
+    /* Sized by height so it shrinks to fit whatever space the dashboard gives the card. */
+    height: var(--pad-size, 150px);
+    flex: 0 1 auto;
+    min-height: 0;
     aspect-ratio: 1;
     border-radius: 50%;
     background: var(--secondary-background-color);
@@ -136,6 +143,7 @@ class CameraPtzCard extends HTMLElement {
 
     const pad = document.createElement("div");
     pad.className = "pad";
+    pad.style.setProperty("--pad-size", `${this._padSize()}px`);
     pad.addEventListener("contextmenu", (ev) => ev.preventDefault());
 
     for (const [dir, def] of Object.entries(DIRECTIONS)) {
@@ -223,14 +231,26 @@ class CameraPtzCard extends HTMLElement {
     this._hass.callService("onvif", "ptz", data);
   }
 
-  // Height hint for masonry layouts (1 unit is about 50px).
-  getCardSize() {
-    return this._config && this._config.title ? 5 : 4;
+  _padSize() {
+    const size = Number(this._config && this._config.size);
+    return size > 0 ? Math.min(400, Math.max(80, size)) : DEFAULTS.size;
   }
 
-  // Default size in the sections (grid) layout.
+  // Full card height in px: pad + padding (+ title).
+  _cardHeight() {
+    const title = this._config && this._config.title ? 28 : 0;
+    return this._padSize() + 16 + title;
+  }
+
+  // Height hint for masonry layouts (1 unit is about 50px).
+  getCardSize() {
+    return Math.ceil(this._cardHeight() / 50);
+  }
+
+  // Default size in the sections (grid) layout. A row is 56px plus an 8px gap.
   getGridOptions() {
-    return { columns: 6, rows: 4, min_columns: 3, min_rows: 3 };
+    const rows = Math.ceil((this._cardHeight() + 8) / 64);
+    return { columns: 6, rows, min_columns: 3, min_rows: 2 };
   }
 
   // Visual editor form.
@@ -239,6 +259,7 @@ class CameraPtzCard extends HTMLElement {
     return {
       schema: [
         { name: "title", selector: { text: {} } },
+        { name: "size", selector: { number: { min: 80, max: 400, step: 10, mode: "box", unit_of_measurement: "px" } } },
         { name: "entity", selector: { entity: { domain: "camera" } } },
         {
           name: "move_mode",
@@ -282,6 +303,7 @@ class CameraPtzCard extends HTMLElement {
       computeLabel: (schema) =>
         ({
           title: "Title (optional)",
+          size: "Pad size",
           entity: "Camera (ONVIF)",
           move_mode: "Move mode",
           speed: "Speed",
