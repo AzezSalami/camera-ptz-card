@@ -1,0 +1,22 @@
+name: Release
+on:
+  push:
+    branches: [main]
+    paths: [fullsize-input-text-card.js]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create a release if the version is new
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(grep -oP 'CARD_VERSION = "\K[^"]+' fullsize-input-text-card.js)
+          if gh release view "v$version" >/dev/null 2>&1; then
+            echo "v$version is already released"
+          else
+            gh release create "v$version" --title "v$version" --generate-notes
+          fi
